@@ -111,6 +111,25 @@ public class Transport {
         setPassengerWeights(newWeights); 
     }
 
+    public void formFill() {
+        System.out.println("Выберете способ заполнения данных:");
+        System.out.println("1. Ввести данные с клавиатуры");
+        System.out.println("2. Заполнить случайными значениями");
+        Scanner scanner = new Scanner(System.in);
+        int choice = scanner.nextInt();
+        
+        switch (choice) {
+            case 1:
+                fillFromKeyboard();
+                break;
+            case 2:
+                fillRandom();
+                break;
+            default:
+                System.out.println("Некорректный выбор");
+        }
+    }
+
     // 5. Вычисления и сравнения
 
     public double getTotalCapacity() {
@@ -150,7 +169,7 @@ public class Transport {
         System.out.println("=== СОЗДАНИЕ ОДИНОЧНЫХ ОБЪЕКТОВ ===");
         
         Transport t1 = new Transport(); 
-        t1.fillRandom();
+        t1.formFill();
         System.out.println("Объект 1:");
         t1.printInfo();
 
@@ -160,7 +179,7 @@ public class Transport {
         t2.printInfo();
 
         Transport t3 = new Transport(4); 
-        t3.fillRandom();
+        t3.formFill();
         System.out.println("\nОбъект 3:");
         t3.printInfo();
 
@@ -172,7 +191,7 @@ public class Transport {
         Transport[] vector = new Transport[3];
         
         vector[0] = new Transport(); 
-        vector[0].fillRandom();
+        vector[0].formFill();
 
         vector[1] = new Transport(new double[]{90.0, 50.0});
 

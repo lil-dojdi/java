@@ -1,7 +1,14 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Random;
-import java.util.Scanner;
 
 public class Transport {
+    private static final int MAX_PASSENGERS = 1000;
+    private static final double MAX_PASSENGER_WEIGHT = 500.0;
+    private static final BufferedReader READER =
+            new BufferedReader(new InputStreamReader(System.in));
+
     // 1. Поля класса
     private int passengerCount;          
     private double[] passengerWeights;   
@@ -11,9 +18,7 @@ public class Transport {
 
     // 2.1 Конструктор по умолчанию
     public Transport() {
-        this.passengerCount = 0;
-        this.passengerWeights = new double[0]; 
-        createdObjectsCount++;
+        this(0);
     }
 
     // 2.2 Конструктор с параметрами №1 (массив весов)
@@ -24,18 +29,16 @@ public class Transport {
 
     // 2.3 Конструктор с параметрами №2 (число пассажиров)
     public Transport(int passengerCount) {
-        this.passengerCount = passengerCount;
-        this.passengerWeights = new double[passengerCount]; 
+        setPassengerCount(passengerCount);
         createdObjectsCount++;
     }
 
     // 2.4 Конструктор копирования
     public Transport(Transport other) {
-        this.passengerCount = other.passengerCount;
-        this.passengerWeights = new double[other.passengerCount]; 
-        for (int i = 0; i < other.passengerCount; i++) {
-            this.passengerWeights[i] = other.passengerWeights[i];
+        if (other == null) {
+            throw new IllegalArgumentException("Объект для копирования не может быть null");
         }
+        setPassengerWeights(other.passengerWeights);
         createdObjectsCount++;
     }
 
@@ -46,24 +49,27 @@ public class Transport {
     }
 
     public void setPassengerCount(int passengerCount) {
+        validatePassengerCount(passengerCount);
         this.passengerCount = passengerCount;
+        this.passengerWeights = new double[passengerCount];
     }
 
     public double[] getPassengerWeights() {
-        return passengerWeights;
+        return passengerWeights.clone();
     }
 
     public void setPassengerWeights(double[] weights) {
-        if (weights != null) {
-            this.passengerCount = weights.length;
-            this.passengerWeights = new double[this.passengerCount];
-            for (int i = 0; i < weights.length; i++) {
-                this.passengerWeights[i] = weights[i];
-            }
-        } else {
+        if (weights == null) {
             this.passengerCount = 0;
             this.passengerWeights = new double[0];
+            return;
         }
+        validatePassengerCount(weights.length);
+        for (double weight : weights) {
+            validateWeight(weight);
+        }
+        this.passengerCount = weights.length;
+        this.passengerWeights = weights.clone();
     }
 
     public static int getCreatedObjectsCount() {
@@ -88,16 +94,13 @@ public class Transport {
     }
 
     public void fillFromKeyboard() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Введите количество пассажиров: ");
-        int count = scanner.nextInt();
-        
+        int count = readInt("Введите количество пассажиров: ", 0, MAX_PASSENGERS);
         double[] newWeights = new double[count];
         for (int i = 0; i < count; i++) {
-            System.out.print("Введите вес пассажира " + (i + 1) + ": ");
-            newWeights[i] = scanner.nextDouble();
+            newWeights[i] = readDouble("Введите вес пассажира " + (i + 1) + ": ",
+                    0.0, MAX_PASSENGER_WEIGHT);
         }
-        setPassengerWeights(newWeights); 
+        setPassengerWeights(newWeights);
     }
 
     public void fillRandom() {
@@ -112,21 +115,72 @@ public class Transport {
     }
 
     public void formFill() {
-        System.out.println("Выберете способ заполнения данных:");
+        System.out.println("Выберите способ заполнения данных:");
         System.out.println("1. Ввести данные с клавиатуры");
         System.out.println("2. Заполнить случайными значениями");
-        Scanner scanner = new Scanner(System.in);
-        int choice = scanner.nextInt();
-        
-        switch (choice) {
-            case 1:
-                fillFromKeyboard();
-                break;
-            case 2:
-                fillRandom();
-                break;
-            default:
-                System.out.println("Некорректный выбор");
+        int choice = readInt("Ваш выбор: ", 1, 2);
+        if (choice == 1) {
+            fillFromKeyboard();
+        } else {
+            fillRandom();
+        }
+    }
+
+    private static int readInt(String prompt, int min, int max) {
+        while (true) {
+            System.out.print(prompt);
+            String input = readLine();
+            try {
+                int value = Integer.parseInt(input);
+                if (value >= min && value <= max) {
+                    return value;
+                }
+            } catch (NumberFormatException ignored) {
+                // Повторный запрос выводится ниже.
+            }
+            System.out.println("Ошибка: введите целое число от " + min + " до " + max + ".");
+        }
+    }
+
+    private static double readDouble(String prompt, double min, double max) {
+        while (true) {
+            System.out.print(prompt);
+            String input = readLine().replace(',', '.');
+            try {
+                double value = Double.parseDouble(input);
+                if (Double.isFinite(value) && value >= min && value <= max) {
+                    return value;
+                }
+            } catch (NumberFormatException ignored) {
+                // Повторный запрос выводится ниже.
+            }
+            System.out.println("Ошибка: введите число от " + min + " до " + max + ".");
+        }
+    }
+
+    private static String readLine() {
+        try {
+            String input = READER.readLine();
+            if (input == null) {
+                throw new IllegalStateException("Ввод завершен неожиданно");
+            }
+            return input.trim();
+        } catch (IOException exception) {
+            throw new IllegalStateException("Ошибка чтения данных", exception);
+        }
+    }
+
+    private static void validatePassengerCount(int count) {
+        if (count < 0 || count > MAX_PASSENGERS) {
+            throw new IllegalArgumentException("Количество пассажиров должно быть от 0 до "
+                    + MAX_PASSENGERS);
+        }
+    }
+
+    private static void validateWeight(double weight) {
+        if (!Double.isFinite(weight) || weight < 0 || weight > MAX_PASSENGER_WEIGHT) {
+            throw new IllegalArgumentException("Вес пассажира должен быть от 0 до "
+                    + MAX_PASSENGER_WEIGHT + " кг");
         }
     }
 
@@ -134,8 +188,8 @@ public class Transport {
 
     public double getTotalCapacity() {
         double sum = 0;
-        for (int i = 0; i < passengerWeights.length; i++) {
-            sum += passengerWeights[i];
+        for (double weight : passengerWeights) {
+            sum += weight;
         }
         return sum;
     }
@@ -192,10 +246,16 @@ public class Transport {
         
         vector[0] = new Transport(); 
         vector[0].formFill();
+        System.out.println("\nОбъект vector[0] после создания:");
+        vector[0].printInfo();
 
         vector[1] = new Transport(new double[]{90.0, 50.0});
+        System.out.println("\nОбъект vector[1] после создания:");
+        vector[1].printInfo();
 
         vector[2] = new Transport(vector[1]); 
+        System.out.println("\nОбъект vector[2] после создания:");
+        vector[2].printInfo();
 
         for (int i = 0; i < vector.length; i++) {
             System.out.println("\nЭлемент вектора №" + (i + 1) + ":");

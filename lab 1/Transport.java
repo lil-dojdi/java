@@ -51,12 +51,16 @@ public class Transport {
     public void setPassengerCount(int passengerCount) {
         validatePassengerCount(passengerCount);
         this.passengerCount = passengerCount;
+<<<<<<< HEAD
         double[] newWeights = new double[passengerCount];
         if (this.passengerWeights != null) {
             System.arraycopy(this.passengerWeights, 0, newWeights, 0,
                     Math.min(this.passengerWeights.length, passengerCount));
         } // Сохраняем существующие веса, если они есть
         this.passengerWeights = newWeights;
+=======
+        this.passengerWeights = new double[passengerCount];
+>>>>>>> da02f6538d37b9e775b76fd4e9144ee950989c1f
     }
 
     public double[] getPassengerWeights() {
@@ -99,16 +103,23 @@ public class Transport {
     }
 
     public void fillFromKeyboard() {
+<<<<<<< HEAD
         int count;
         do{     
          count = readInt("Введите количество пассажиров: ", 0, MAX_PASSENGERS);}
         while(count < 0 || count > MAX_PASSENGERS); // Проверка на корректность ввода
+=======
+        int count = readInt("Введите количество пассажиров: ", 0, MAX_PASSENGERS);
+>>>>>>> da02f6538d37b9e775b76fd4e9144ee950989c1f
         double[] newWeights = new double[count];
         for (int i = 0; i < count; i++) {
             newWeights[i] = readDouble("Введите вес пассажира " + (i + 1) + ": ",
                     0.0, MAX_PASSENGER_WEIGHT);
         }
+<<<<<<< HEAD
 
+=======
+>>>>>>> da02f6538d37b9e775b76fd4e9144ee950989c1f
         setPassengerWeights(newWeights);
     }
 
